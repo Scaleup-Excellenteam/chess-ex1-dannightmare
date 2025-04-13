@@ -26,3 +26,5 @@
 # Ignore temporary image cache
 img/cache/
 
+Chess/.cache/
+Chess/build/

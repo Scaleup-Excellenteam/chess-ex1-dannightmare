@@ -19,11 +19,11 @@ if (MSVC)
     add_compile_options (/W4 /permissive- /Zc:externConstexpr /Zc:inline)
 endif ()
 
-add_executable (Chess "")
+add_executable (Chess
+    src/board.cpp
+    src/piece.cpp
+)
 
 
 add_subdirectory (include)
 add_subdirectory (src)
-
-
-
