@@ -26,11 +26,11 @@ public:
     ~King() {}
 };
 
-// class Queen : public Piece {
-// public:
-//     bool isValidMove(tuple<int, int>, tuple<int, int>) override;
-//     Queen(bool is_white = true) : Piece(is_white) {}
-// };
+class Queen : public Piece {
+public:
+    bool isValidMove(Position src, Position dst) override;
+    Queen(bool is_white = true) : Piece(is_white) {}
+};
 
 class Rook : public virtual Piece {
 public:
@@ -39,20 +39,22 @@ public:
     ~Rook() {}
 };
 
-// class Knight : public Piece {
-// public:
-//     bool isValidMove(tuple<int, int>, tuple<int, int>) override;
-//     Knight(bool is_white = true) : Piece(is_white) {}
-// };
-//
-// class Bishop : public Piece {
-// public:
-//     bool isValidMove(tuple<int, int>, tuple<int, int>) override;
-//     Bishop(bool is_white = true) : Piece(is_white) {}
-// };
-//
-// class Pawn : public Piece {
-// public:
-//     bool isValidMove(tuple<int, int>, tuple<int, int>) override;
-//     Pawn(bool is_white = true) : Piece(is_white) {}
-// };
+class Knight : public Piece {
+public:
+    bool isValidMove(Position src, Position dst) override;
+    Knight(bool is_white = true) : Piece(is_white) {}
+};
+
+class Bishop : public Piece {
+public:
+    bool isValidMove(Position src, Position dst) override;
+    Bishop(bool is_white = true) : Piece(is_white) {}
+};
+
+class Pawn : public Piece {
+public:
+    // only exists because the method is virtual
+    bool isValidMove(Position src, Position dst) override;
+    bool isValidMove(Position src, Position dst, bool isAttacking);
+    Pawn(bool is_white = true) : Piece(is_white) {}
+};

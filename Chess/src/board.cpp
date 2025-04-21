@@ -20,17 +20,21 @@ Board::Board(string init) {
         case 'r':
             _board[i] = make_shared<Rook>(is_white);
             break;
-            //        case 'n':
-            //            _board[i] = make_unique<Knight>(is_white);
-            //        case 'b':
-            //            _board[i] = make_unique<Bishop>(is_white);
-            //        case 'q':
-            //            _board[i] = make_unique<Queen>(is_white);
+        case 'n':
+            _board[i] = make_shared<Knight>(is_white);
+            break;
+        case 'b':
+            _board[i] = make_shared<Bishop>(is_white);
+            break;
+        case 'q':
+            _board[i] = make_shared<Queen>(is_white);
+            break;
         case 'k':
             _board[i] = make_shared<King>(is_white);
             break;
-            //        case 'p':
-            //            _board[i] = make_unique<Pawn>(is_white);
+        case 'p':
+            _board[i] = make_shared<Pawn>(is_white);
+            break;
         }
     }
 }
@@ -58,17 +62,23 @@ bool Board::isPathClear(Position src, Position dst) const {
 
 bool Board::hasLineOfSight(Position src, Position dst) const {
     auto piece = _board[src.y * SIZE + src.x];
-    cout << "debug hlos" << endl;
-    if (dynamic_pointer_cast<Rook>(piece)) {
-        cout << "debug hlos rook" << endl;
-        if (!piece->isValidMove(src, dst) || !isPathClear(src, dst)) {
+
+    if (dynamic_pointer_cast<Rook>(piece) ||
+        dynamic_pointer_cast<Bishop>(piece) ||
+        dynamic_pointer_cast<Rook>(piece)) {
+        return piece->isValidMove(src, dst) && isPathClear(src, dst);
+    } else if (dynamic_pointer_cast<King>(piece) ||
+               dynamic_pointer_cast<Knight>(piece)) {
+        return piece->isValidMove(src, dst);
+    } else if (dynamic_pointer_cast<Pawn>(piece)) {
+        auto pawn = dynamic_pointer_cast<Pawn>(piece);
+        auto dst_piece = _board[dst.y * SIZE + dst.x];
+
+        if (dst.x == src.x && dst_piece != nullptr) {
             return false;
         }
-    } else if (dynamic_pointer_cast<King>(piece)) {
-        cout << "debug hlos king" << endl;
-        if (!piece->isValidMove(src, dst)) {
-            return false;
-        }
+        bool isAttacking = abs(dst.x - src.x) == 1 && dst_piece != nullptr;
+        return pawn->isValidMove(src, dst, isAttacking);
     }
     return true;
 }

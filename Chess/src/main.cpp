@@ -6,7 +6,8 @@ void parseInput(const string& res, Position &pos1, Position &pos2);
 
 int main() {
     //string board = "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr";
-    string board = "##########K###############################R#############r#r#####";
+    //string board = "##########K###############################R#############r#r#####";
+    string board = "##########K#######p#####P#################R#############r#r#####";
     Board b(board);
     Chess a(board);
     int codeResponse = 0;
