@@ -10,7 +10,7 @@ private:
     array<shared_ptr<Piece>, SIZE * SIZE> _board;
     bool isPathClear(Position src, Position dst) const;
     bool isCheck(bool target_player) const;
-    bool hasLineOfSight(Position src, Position dst) const;
+    bool isValidMove(Position src, Position dst) const;
 
     bool _turn_color = true;
 

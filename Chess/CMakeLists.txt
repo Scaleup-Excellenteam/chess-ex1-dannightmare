@@ -22,6 +22,7 @@ endif ()
 add_executable (Chess
     src/board.cpp
     src/piece.cpp
+    src/main.cpp
 )
 
 

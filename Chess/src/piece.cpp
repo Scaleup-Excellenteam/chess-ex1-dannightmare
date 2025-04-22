@@ -34,9 +34,6 @@ bool Knight::isValidMove(Position src, Position dst) {
 }
 
 bool Queen::isValidMove(Position src, Position dst) {
-    int dx = dst.x - src.x;
-    int dy = dst.y - src.y;
-
     if (src == dst)
         return false;
     return Rook().isValidMove(src, dst) || Bishop().isValidMove(src, dst);

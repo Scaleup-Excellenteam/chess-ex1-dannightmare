@@ -60,12 +60,12 @@ bool Board::isPathClear(Position src, Position dst) const {
     return true;
 }
 
-bool Board::hasLineOfSight(Position src, Position dst) const {
+bool Board::isValidMove(Position src, Position dst) const {
     auto piece = _board[src.y * SIZE + src.x];
 
     if (dynamic_pointer_cast<Rook>(piece) ||
         dynamic_pointer_cast<Bishop>(piece) ||
-        dynamic_pointer_cast<Rook>(piece)) {
+        dynamic_pointer_cast<Queen>(piece)) {
         return piece->isValidMove(src, dst) && isPathClear(src, dst);
     } else if (dynamic_pointer_cast<King>(piece) ||
                dynamic_pointer_cast<Knight>(piece)) {
@@ -105,7 +105,7 @@ bool Board::isCheck(bool target_player) const {
             continue;
         }
         Position cur = {i % SIZE, i / SIZE};
-        if (hasLineOfSight(cur, target_king_position)) {
+        if (isValidMove(cur, target_king_position)) {
             return true;
         }
     }
@@ -128,7 +128,7 @@ int Board::move(Position src, Position dst) {
     }
     cout << "debug" << endl;
 
-    if (!hasLineOfSight(src, dst)) {
+    if (!isValidMove(src, dst)) {
         return 21;
     }
 
