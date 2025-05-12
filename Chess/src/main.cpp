@@ -38,7 +38,6 @@ int main() {
         }
         /**/
 
-        a.setCodeResponse(codeResponse);
         res = a.getInput();
     }
 
