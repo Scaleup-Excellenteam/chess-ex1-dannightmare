@@ -1,3 +1,4 @@
+#pragma once
 #include <list>
 template <class T>
 struct Comparator {

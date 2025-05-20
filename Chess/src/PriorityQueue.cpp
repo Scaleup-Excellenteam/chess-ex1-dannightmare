@@ -28,3 +28,16 @@ void PriorityQueue<T, Comp>::push(const T &item)
                      [&item, &comp](const T &r) { return comp(item, r) > 0; }),
         item);
 }
+//
+// #include <iostream>
+//
+// int main()
+// {
+//     PriorityQueue<int> pq;
+//     pq.push(2);
+//     pq.push(1);
+//     std::cout << pq.poll() << std::endl;
+//     std::cout << pq.poll() << std::endl;
+//
+//     return 0;
+// }

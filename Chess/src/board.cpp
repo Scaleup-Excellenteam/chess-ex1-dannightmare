@@ -1,9 +1,12 @@
 #include "board.h"
 #include "Chess.h"
+#include "Move.h"
 #include <cassert>
 #include <cctype>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 Board::Board() {}
 
@@ -154,4 +157,120 @@ int Board::move(Position src, Position dst)
         return 41;
     }
     return 42;
+}
+
+PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
+                                                        bool is_white)
+{
+    PriorityQueue<Move, MoveComparator> pq;
+
+    for (int i = 0; i < SIZE * SIZE; i++) {
+        Position curr(i % SIZE, i / SIZE);
+        auto piece_ptr           = _board[i];
+        vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
+        for (Move move : valid_moves) {
+            if (!isValidMove(move.src, move.dst)) {
+                continue;
+            }
+            scoreMove(move);
+            pq.push(move);
+        }
+    }
+
+    // ensure only 5 moves are listed
+    PriorityQueue<Move, MoveComparator> ret;
+    for (int i = 0; i < 5; i++) {
+        try {
+            ret.push(pq.poll());
+        } catch (runtime_error) {
+            // here to ensure polling doesn't crash
+            break;
+        }
+    }
+
+    return ret;
+}
+
+int Board::moveTakesHigherValue(Move &move)
+{
+    auto src_piece = _board[move.src.x + move.src.y * SIZE];
+    auto dst_piece = _board[move.dst.x + move.dst.y * SIZE];
+
+    int diff = dst_piece->value - src_piece->value;
+    if (diff > 0) {
+        return diff;
+    }
+    return 0;
+}
+
+shared_ptr<Piece> Board::findLowestValueAttackerOn(Position dst, bool turn)
+{
+    for (int i = 0; i < SIZE * SIZE; i++) {
+        auto piece = _board[i];
+        if (piece == nullptr || piece->Color() == turn) {
+            continue;
+        }
+        Position cur = {i % SIZE, i / SIZE};
+        if (isValidMove(cur, dst)) {
+            return piece;
+        }
+    }
+    return nullptr;
+}
+
+int Board::moveLeavesPieceVulnerable(Move &move)
+{
+    auto lowest_value_attacker =
+        findLowestValueAttackerOn(move.dst, _turn_color);
+    if (!lowest_value_attacker) {
+        return 0;
+    }
+
+    auto piece = _board[move.src.x + move.src.y * SIZE];
+
+    int diff = lowest_value_attacker->value - piece->value;
+    if (diff < 0) {
+        return diff;
+    }
+    return 0;
+}
+
+int Board::moveMakesPieceAttackHigherValue(Move &move)
+{
+    auto piece = _board[move.src.x + move.src.y * SIZE];
+    // get all valid moves from destination to predict whether it attacks a
+    // higher value piece
+    shared_ptr<Piece> highest_cost_enemy_piece = nullptr;
+    vector<Move> piece_moves = piece->getAllValidMoves(move.dst);
+    for (auto piece_move : piece_moves) {
+        if (piece_move.pawn_move) {
+            continue;
+        }
+        if (!isValidMove(piece_move.src, piece_move.dst)) {
+            continue;
+        }
+        auto enemy_piece = _board[move.dst.x + move.dst.y * SIZE];
+        if (!enemy_piece) {
+            continue;
+        }
+        // now there is definitely a piece
+        if (!highest_cost_enemy_piece ||
+            highest_cost_enemy_piece->value < enemy_piece->value) {
+            highest_cost_enemy_piece = enemy_piece;
+        }
+    }
+    return highest_cost_enemy_piece->value;
+}
+
+void Board::scoreMove(Move &move)
+{
+    auto src_piece = _board[move.src.x + move.src.y * SIZE];
+    auto dst_piece = _board[move.dst.x + move.dst.y * SIZE];
+
+    int score = moveTakesHigherValue(move);
+    move.score += score;
+    score = moveLeavesPieceVulnerable(move);
+    move.score += score;
+    score = moveMakesPieceAttackHigherValue(move);
+    move.score += score;
 }

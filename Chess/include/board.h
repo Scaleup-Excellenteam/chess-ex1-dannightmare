@@ -1,3 +1,6 @@
+#pragma once
+#include "Move.h"
+#include "PriorityQueue.h"
 #include "piece.h"
 #include <array>
 #include <memory>
@@ -15,10 +18,20 @@ private:
 
     bool _turn_color = true;
 
+    // scoreMove
+    void scoreMove(Move &move);
+    int moveTakesHigherValue(Move &move);
+    int moveLeavesPieceVulnerable(Move &move);
+    int moveMakesPieceAttackHigherValue(Move &move);
+
+    shared_ptr<Piece> findLowestValueAttackerOn(Position dst, bool turn);
+
 public:
     Board();
     Board(string init);
     ~Board();
 
     int move(Position src, Position dst);
+
+    PriorityQueue<Move, MoveComparator> getBestMoves(int depth, bool is_white);
 };
