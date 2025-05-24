@@ -1,6 +1,7 @@
 #include "board.h"
 #include "Chess.h"
 #include "Move.h"
+#include "PriorityQueue.h"
 #include <cassert>
 #include <cctype>
 #include <iostream>
@@ -173,6 +174,12 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
                 continue;
             }
             scoreMove(move);
+            if (depth > 0) {
+                PriorityQueue<Move, MoveComparator> oponentBestMoves =
+                    getBestMoves(depth - 1, !is_white);
+                Move oponentBestMove = oponentBestMoves.poll();
+                move.score -= oponentBestMove.score;
+            }
             pq.push(move);
         }
     }
