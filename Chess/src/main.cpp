@@ -20,9 +20,9 @@ int main()
     Chess a(board);
     int codeResponse = 0;
     a.preGetInput();
-    auto pq = b.getBestMoves(2, b.get_turn_color());
     string res;
     {
+        auto pq       = b.getBestMoves(2, b.get_turn_color());
         Move mov      = pq.poll();
         Position pos1 = mov.src, pos2 = mov.dst;
         parseMove(pos1, pos2, res);
@@ -55,8 +55,8 @@ int main()
         /**/
 
         a.preGetInput();
-        pq = b.getBestMoves(2, b.get_turn_color());
         {
+            auto pq       = b.getBestMoves(2, b.get_turn_color());
             Move mov      = pq.poll();
             Position pos1 = mov.src, pos2 = mov.dst;
             parseMove(pos1, pos2, res);

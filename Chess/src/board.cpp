@@ -167,7 +167,11 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
 
     for (int i = 0; i < SIZE * SIZE; i++) {
         Position curr(i % SIZE, i / SIZE);
-        auto piece_ptr           = _board[i];
+
+        auto piece_ptr = _board[i];
+        if (!piece_ptr) {
+            continue;
+        }
         vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
         for (Move move : valid_moves) {
             if (!isValidMove(move.src, move.dst)) {
@@ -201,7 +205,13 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
 int Board::moveTakesHigherValue(Move &move)
 {
     auto src_piece = _board[move.src.x + move.src.y * SIZE];
+    if (!src_piece) {
+        return 0;
+    }
     auto dst_piece = _board[move.dst.x + move.dst.y * SIZE];
+    if (!dst_piece) {
+        return 0;
+    }
 
     int diff = dst_piece->value - src_piece->value;
     if (diff > 0) {
@@ -266,7 +276,9 @@ int Board::moveMakesPieceAttackHigherValue(Move &move)
             highest_cost_enemy_piece = enemy_piece;
         }
     }
-    return highest_cost_enemy_piece->value;
+    return highest_cost_enemy_piece == nullptr
+               ? 0
+               : highest_cost_enemy_piece->value;
 }
 
 void Board::scoreMove(Move &move)

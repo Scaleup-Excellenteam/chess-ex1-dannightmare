@@ -14,6 +14,6 @@ struct Move {
 struct MoveComparator {
     int operator()(const Move &l, const Move &r) const
     {
-        return l.score - r.score;
+        return r.score - l.score;
     }
 };
