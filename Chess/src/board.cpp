@@ -172,6 +172,9 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
         if (!piece_ptr) {
             continue;
         }
+        if (piece_ptr->Color() != is_white) {
+            continue;
+        }
         vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
         for (Move move : valid_moves) {
             if (!isValidMove(move.src, move.dst)) {
