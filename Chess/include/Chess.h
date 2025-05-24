@@ -7,9 +7,9 @@
 #include <string>
 
 using std::cout;
-using std::cin; 
+using std::cin;
 using std::endl;
-using std::string; 
+using std::string;
 
 const int _SIZE = 21;
 
@@ -38,6 +38,7 @@ public:
 	Chess(const string& start = "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr");
 	Chess(const Chess&)=delete;
 	Chess& operator=(const Chess&) = delete;
+    void preGetInput();
 	string getInput();
 	void setCodeResponse(int codeResponse);
 };

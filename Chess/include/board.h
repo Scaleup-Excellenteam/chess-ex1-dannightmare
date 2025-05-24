@@ -31,6 +31,8 @@ public:
     Board(string init);
     ~Board();
 
+    bool get_turn_color() const;
+
     int move(Position src, Position dst);
 
     PriorityQueue<Move, MoveComparator> getBestMoves(int depth, bool is_white);

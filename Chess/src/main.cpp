@@ -1,8 +1,10 @@
 // Chess
 #include "Chess.h"
+#include "Position.h"
 #include "board.h"
 
 void parseInput(const string &res, Position &pos1, Position &pos2);
+void parseMove(const Position &pos1, const Position &pos2, string &res);
 
 int main()
 {
@@ -17,7 +19,16 @@ int main()
     Board b(board);
     Chess a(board);
     int codeResponse = 0;
-    string res       = a.getInput();
+    a.preGetInput();
+    auto pq = b.getBestMoves(2, b.get_turn_color());
+    string res;
+    {
+        Move mov      = pq.poll();
+        Position pos1 = mov.src, pos2 = mov.dst;
+        parseMove(pos1, pos2, res);
+        std::cout << "recommended move: " << res << std::endl;
+    }
+    res = a.getInput();
     while (res != "exit") {
         /*
         codeResponse value :
@@ -43,6 +54,14 @@ int main()
         }
         /**/
 
+        a.preGetInput();
+        pq = b.getBestMoves(2, b.get_turn_color());
+        {
+            Move mov      = pq.poll();
+            Position pos1 = mov.src, pos2 = mov.dst;
+            parseMove(pos1, pos2, res);
+            std::cout << "recommended move: " << res << std::endl;
+        }
         res = a.getInput();
     }
 
@@ -56,4 +75,13 @@ void parseInput(const string &res, Position &pos1, Position &pos2)
     pos1.x = res[1] - '1';
     pos2.y = tolower(res[2]) - 'a';
     pos2.x = res[3] - '1';
+}
+
+void parseMove(const Position &pos1, const Position &pos2, string &res)
+{
+    res += pos1.y + 'a';
+    res += pos1.x + '1';
+    res += " ";
+    res += pos2.y + 'a';
+    res += pos2.x + '1';
 }

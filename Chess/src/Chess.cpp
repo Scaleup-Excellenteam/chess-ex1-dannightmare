@@ -280,10 +280,8 @@ Chess::Chess(const string& start)
 	setPieces();
 }
 
-// get the source and destination
-string Chess::getInput()
-{
-	static bool isFirst = true;
+void Chess::preGetInput() {
+    static bool isFirst = true;
 
 	if (isFirst)
 		isFirst = false;
@@ -291,6 +289,10 @@ string Chess::getInput()
 		doTurn();
 
 	displayBoard();
+}
+// get the source and destination
+string Chess::getInput()
+{
 	showAskInput();
 
 	cin >> m_input;

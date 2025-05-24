@@ -281,3 +281,5 @@ void Board::scoreMove(Move &move)
     score = moveMakesPieceAttackHigherValue(move);
     move.score += score;
 }
+
+bool Board::get_turn_color() const { return _turn_color; }
