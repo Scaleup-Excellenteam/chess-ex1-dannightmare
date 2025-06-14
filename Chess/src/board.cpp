@@ -2,9 +2,12 @@
 #include "Chess.h"
 #include "Move.h"
 #include "PriorityQueue.h"
+#include "threadpool.h"
 #include <cassert>
 #include <cctype>
+#include <iostream>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <vector>
 
@@ -195,27 +198,32 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
         }
         vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
         for (Move move : valid_moves) {
-            int canMoveResult = canMove(move.src, move.dst);
-            if (canMoveResult != 0) {
-                continue;
-            }
-            scoreMove(move);
-            if (depth > 0) {
-                auto dst_piece = _board[move.dst.y * SIZE + move.dst.x];
-                //doMove
-                _board[move.dst.y * SIZE + move.dst.x] = piece_ptr;
-                _board[move.src.y * SIZE + move.src.x] = nullptr;
-                _turn_color = !_turn_color;
-                PriorityQueue<Move, MoveComparator> oponentBestMoves =
-                    getBestMoves(depth - 1, !is_white);
-                //revertMove
-                _board[move.dst.y * SIZE + move.dst.x] = dst_piece;
-                _board[move.src.y * SIZE + move.src.x] = piece_ptr;
-                _turn_color = !_turn_color;
-                Move oponentBestMove = oponentBestMoves.poll();
-                move.score -= oponentBestMove.score;
-            }
-            pq.push(move);
+            ThreadPool tp;
+            auto mtx_ptr = std::make_shared<std::mutex>();
+            tp.enqueue([this, mtx_ptr, &pq, &move, is_white, piece_ptr, depth] {
+                int canMoveResult = canMove(move.src, move.dst);
+                if (canMoveResult != 0) {
+                    return;
+                }
+                scoreMove(move);
+                if (depth > 0) {
+                    auto dst_piece = _board[move.dst.y * SIZE + move.dst.x];
+                    // doMove
+                    _board[move.dst.y * SIZE + move.dst.x] = piece_ptr;
+                    _board[move.src.y * SIZE + move.src.x] = nullptr;
+                    _turn_color                            = !_turn_color;
+                    PriorityQueue<Move, MoveComparator> oponentBestMoves =
+                        getBestMoves(depth - 1, !is_white);
+                    // revertMove
+                    _board[move.dst.y * SIZE + move.dst.x] = dst_piece;
+                    _board[move.src.y * SIZE + move.src.x] = piece_ptr;
+                    _turn_color                            = !_turn_color;
+                    Move oponentBestMove = oponentBestMoves.poll();
+                    move.score -= oponentBestMove.score;
+                }
+                std::unique_lock<std::mutex> lock(*mtx_ptr);
+                pq.push(move);
+            });
         }
     }
 
