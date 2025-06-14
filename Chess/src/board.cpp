@@ -4,7 +4,6 @@
 #include "PriorityQueue.h"
 #include <cassert>
 #include <cctype>
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -196,13 +195,23 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
         }
         vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
         for (Move move : valid_moves) {
-            if (!isValidMove(move.src, move.dst)) {
+            int canMoveResult = canMove(move.src, move.dst);
+            if (canMoveResult != 0) {
                 continue;
             }
             scoreMove(move);
             if (depth > 0) {
+                auto dst_piece = _board[move.dst.y * SIZE + move.dst.x];
+                //doMove
+                _board[move.dst.y * SIZE + move.dst.x] = piece_ptr;
+                _board[move.src.y * SIZE + move.src.x] = nullptr;
+                _turn_color = !_turn_color;
                 PriorityQueue<Move, MoveComparator> oponentBestMoves =
                     getBestMoves(depth - 1, !is_white);
+                //revertMove
+                _board[move.dst.y * SIZE + move.dst.x] = dst_piece;
+                _board[move.src.y * SIZE + move.src.x] = piece_ptr;
+                _turn_color = !_turn_color;
                 Move oponentBestMove = oponentBestMoves.poll();
                 move.score -= oponentBestMove.score;
             }
