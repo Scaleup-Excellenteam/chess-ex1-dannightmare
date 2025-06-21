@@ -31,6 +31,7 @@ class Chess {
 	bool isSame() const;
 	bool isValid() const;
 	bool isExit() const;
+	bool isEnded() const;
 	void excute();
 	void doTurn();
 

@@ -210,6 +210,12 @@ bool Chess::isExit() const
 {
 	return ((m_input == "exit") || (m_input == "quit") || (m_input == "EXIT") || (m_input == "QUIT"));
 }
+
+bool Chess::isEnded() const
+{
+    return (m_codeResponse / 10 == 5);
+}
+
 // execute the movement on board
 void Chess::excute()
 {
@@ -269,9 +275,14 @@ void Chess::doTurn()
 		m_msg = "the last movement was legal \n";
 		break;
 	}
+    // game ended
     case 51:
         excute();
         m_msg = "checkmate, please exit now";
+        break;
+    case 52:
+        excute();
+        m_msg = "stalemate, please exit now";
         break;
 	}
 }
@@ -300,7 +311,7 @@ string Chess::getInput()
 	showAskInput();
 
 	cin >> m_input;
-	if (isExit())
+	if (isExit() || isEnded())
 		return "exit";
 	while (!isValid() || isSame())
 	{
@@ -330,6 +341,7 @@ void Chess::setCodeResponse(int codeResponse)
 {
 	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
 		((21 == codeResponse) || (codeResponse == 31)) ||
-		((41 == codeResponse) || (codeResponse == 42)) || (51 == codeResponse))
+		((41 == codeResponse) || (codeResponse == 42)) ||
+         (51 == codeResponse || 52 == codeResponse))
 		m_codeResponse = codeResponse;
 }

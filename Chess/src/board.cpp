@@ -141,12 +141,12 @@ vector<Move> Board::getAllValidMovesByPlayer(bool this_player) const
     return allMoves;
 }
 
-bool Board::canUncheck(bool this_player) const
+bool Board::canPlayerMove(bool this_player) const
 {
     auto this_player_moves = getAllValidMovesByPlayer(this_player);
-    bool canUncheck        = true;
+    bool canPlayerMoveRet  = false;
     for (auto move : this_player_moves) {
-        if (!canMove(move.src, move.dst)) {
+        if (canNotMove(move.src, move.dst)) {
             continue;
         }
 
@@ -158,8 +158,8 @@ bool Board::canUncheck(bool this_player) const
             nullptr;
 
         // check if current player will be checked
-        if (isCheck(_turn_color)) {
-            canUncheck = false;
+        if (!isCheck(_turn_color)) {
+            canPlayerMoveRet = true;
         }
 
         // return to previous state
@@ -167,14 +167,17 @@ bool Board::canUncheck(bool this_player) const
             piece;
         const_cast<Board *>(this)->_board[move.dst.y * SIZE + move.dst.x] =
             dst_piece;
+
+        if (canPlayerMoveRet)
+            break;
     }
-    return canUncheck;
+    return canPlayerMoveRet;
 }
 
 // This function has no side effects. Useful for proper reuse of move checking
 // if 0 then the piece can move
 // otherwise, it cannot move
-int Board::canMove(Position src, Position dst) const
+int Board::canNotMove(Position src, Position dst) const
 {
     auto piece = _board[src.y * SIZE + src.x];
     if (!piece) {
@@ -211,9 +214,9 @@ int Board::canMove(Position src, Position dst) const
 
 int Board::move(Position src, Position dst)
 {
-    int canMoveRet = canMove(src, dst);
-    if (canMoveRet != 0) {
-        return canMoveRet;
+    int canNotMoveRet = canNotMove(src, dst);
+    if (canNotMoveRet != 0) {
+        return canNotMoveRet;
     }
 
     auto piece = _board[src.y * SIZE + src.x];
@@ -223,14 +226,14 @@ int Board::move(Position src, Position dst)
 
     _turn_color = !_turn_color;
 
+    bool playerCanMove = canPlayerMove(_turn_color);
+
     if (isCheck(_turn_color)) {
-        if (!canUncheck(_turn_color)) {
-            // checkmate on _turn_color
-            return 51;
-        }
-        return 41;
+        // in check message or checkmate
+        return playerCanMove ? 41 : 51;
     }
-    return 42;
+    // legal move or stalemate
+    return playerCanMove ? 42 : 52;
 }
 
 PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
@@ -253,7 +256,7 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
             ThreadPool tp;
             auto mtx_ptr = std::make_shared<std::mutex>();
             tp.enqueue([this, mtx_ptr, &pq, &move, is_white, piece_ptr, depth] {
-                int canMoveResult = canMove(move.src, move.dst);
+                int canMoveResult = canNotMove(move.src, move.dst);
                 if (canMoveResult != 0) {
                     return;
                 }

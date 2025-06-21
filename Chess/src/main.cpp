@@ -10,7 +10,7 @@ void parseMove(const Position &pos1, const Position &pos2, string &res);
 int main()
 {
     string board =
-        "K##########rr###################################################";
+        "#K##########r######r############################################";
     // string board =
     //     "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr";
     // string board =
