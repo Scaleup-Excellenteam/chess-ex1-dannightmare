@@ -16,10 +16,12 @@ bool isTurnAI(const bool turn, const int AI);
 
 int main()
 {
-    string board =
-        "#K##########r######r############################################";
+    // Two rooks
     // string board =
-    //     "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr";
+    //     "#K##########r######r############################################";
+    // Standard game
+    string board =
+        "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr";
     // string board =
     // "Q#####################B########R###########r######b#####q#######";
     // string board =
