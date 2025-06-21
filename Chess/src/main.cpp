@@ -4,8 +4,15 @@
 #include "board.h"
 #include <stdexcept>
 
+enum AI {
+    NONE = 0,
+    BLACK,
+    WHITE,
+};
+
 void parseInput(const string &res, Position &pos1, Position &pos2);
 void parseMove(const Position &pos1, const Position &pos2, string &res);
+bool isTurnAI(const bool turn, const int AI);
 
 int main()
 {
@@ -22,17 +29,29 @@ int main()
     Board b(board);
     Chess a(board);
     int codeResponse = 0;
+    string res       = "";
+    int AI           = -1;
+    Position pos1, pos2;
+
+    std::cout
+        << "Please choose computer AI:\n\n\t0 - None\n\t1 - Black\n\t2 - White"
+        << std::endl;
+    std::cin >> AI;
+
     a.preGetInput();
-    string res;
     try {
-        auto pq       = b.getBestMoves(2, b.get_turn_color());
-        Move mov      = pq.poll();
-        Position pos1 = mov.src, pos2 = mov.dst;
+        auto pq  = b.getBestMoves(2, b.get_turn_color());
+        Move mov = pq.poll();
+        pos1 = mov.src, pos2 = mov.dst;
         parseMove(pos1, pos2, res);
-        std::cout << "recommended move: " << res << std::endl;
     } catch (runtime_error re) {
     }
-    res = a.getInput();
+    if (!isTurnAI(a.getTurn(), AI)) {
+        std::cout << "recommended move: " << res << std::endl;
+        res = a.getInput();
+    } else {
+        a.setInput(res);
+    }
     while (res != "exit") {
         /*
         codeResponse value :
@@ -60,14 +79,18 @@ int main()
 
         a.preGetInput();
         try {
-            auto pq       = b.getBestMoves(2, b.get_turn_color());
-            Move mov      = pq.poll();
-            Position pos1 = mov.src, pos2 = mov.dst;
+            auto pq  = b.getBestMoves(2, b.get_turn_color());
+            Move mov = pq.poll();
+            pos1 = mov.src, pos2 = mov.dst;
             parseMove(pos1, pos2, res);
-            std::cout << "recommended move: " << res << std::endl;
         } catch (runtime_error re) {
         }
-        res = a.getInput();
+        if (!isTurnAI(a.getTurn(), AI)) {
+            std::cout << "recommended move: " << res << std::endl;
+            res = a.getInput();
+        } else {
+            a.setInput(res);
+        }
     }
 
     cout << endl << "Exiting " << endl;
@@ -86,7 +109,14 @@ void parseMove(const Position &pos1, const Position &pos2, string &res)
 {
     res = pos1.y + 'a';
     res += pos1.x + '1';
-    res += " ";
     res += pos2.y + 'a';
     res += pos2.x + '1';
+}
+
+bool isTurnAI(const bool turn, const int AI)
+{
+    if (AI == NONE) {
+        return false;
+    }
+    return turn == AI - 1;
 }

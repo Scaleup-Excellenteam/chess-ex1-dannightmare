@@ -42,4 +42,6 @@ public:
     void preGetInput();
 	string getInput();
 	void setCodeResponse(int codeResponse);
+    bool getTurn() const;
+    void setInput(const string& input);
 };

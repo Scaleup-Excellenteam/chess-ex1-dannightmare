@@ -345,3 +345,11 @@ void Chess::setCodeResponse(int codeResponse)
          (51 == codeResponse || 52 == codeResponse))
 		m_codeResponse = codeResponse;
 }
+
+bool Chess::getTurn() const {
+    return m_turn;
+}
+
+void Chess::setInput(const string& input) {
+    m_input = input;
+}

@@ -253,7 +253,7 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
         }
         vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
         for (Move move : valid_moves) {
-            ThreadPool tp;
+            ThreadPool tp(8);
             auto mtx_ptr = std::make_shared<std::mutex>();
             tp.enqueue([this, mtx_ptr, &pq, &move, is_white, piece_ptr, depth] {
                 int canMoveResult = canNotMove(move.src, move.dst);
