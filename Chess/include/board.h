@@ -34,6 +34,9 @@ private:
     // checking. if 0 then the piece can move; otherwise, it cannot move
     int canNotMove(Position src, Position dst) const;
 
+    bool isInsufficientMaterial() const;
+    static bool isInsufficientMaterialPlayer(vector<shared_ptr<Piece>> vec);
+
 public:
     Board();
     Board(string init);

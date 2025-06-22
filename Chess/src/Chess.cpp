@@ -288,6 +288,10 @@ void Chess::doTurn()
         excute();
         m_msg = "stalemate, please exit now";
         break;
+    case 53:
+        excute();
+        m_msg = "insufficient material\n";
+        break;
 	}
 }
 
@@ -346,7 +350,7 @@ void Chess::setCodeResponse(int codeResponse)
 	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
 		((21 == codeResponse) || (codeResponse == 31)) ||
 		((41 <= codeResponse) || (codeResponse <= 43)) ||
-         (51 == codeResponse || 52 == codeResponse))
+         (51 <= codeResponse || codeResponse <= 53))
 		m_codeResponse = codeResponse;
 }
 

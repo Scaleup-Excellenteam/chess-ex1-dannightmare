@@ -219,15 +219,20 @@ int Board::move(Position src, Position dst)
         return canNotMoveRet;
     }
 
-    auto piece = _board[src.y * SIZE + src.x];
-    if (_board[dst.y * SIZE + dst.x] == nullptr) {
-        num_turns_without_capture++;
-    } else {
-        num_turns_without_capture = 0;
-    }
+    bool isTurnCapture = _board[dst.y * SIZE + dst.x] != nullptr;
+    auto piece         = _board[src.y * SIZE + src.x];
 
     _board[dst.y * SIZE + dst.x] = piece;
     _board[src.y * SIZE + src.x] = nullptr;
+
+    if (!isTurnCapture) {
+        num_turns_without_capture++;
+    } else {
+        num_turns_without_capture = 0;
+        if (isInsufficientMaterial()) {
+            return 53;
+        }
+    }
 
     _turn_color = !_turn_color;
 
@@ -401,3 +406,40 @@ void Board::scoreMove(Move &move)
 }
 
 bool Board::get_turn_color() const { return _turn_color; }
+
+bool Board::isInsufficientMaterial() const
+{
+    vector<std::shared_ptr<Piece>> white;
+    vector<std::shared_ptr<Piece>> black;
+    for (auto piece : _board) {
+        if (!piece)
+            continue;
+        if (piece->Color()) {
+            white.push_back(piece);
+        } else {
+            black.push_back(piece);
+        }
+    }
+
+    return (isInsufficientMaterialPlayer(white) &&
+            isInsufficientMaterialPlayer(black));
+}
+
+template <class T>
+int count(vector<std::shared_ptr<Piece>> p)
+{
+    int num = 0;
+    for (auto piece : p) {
+        if (dynamic_pointer_cast<T>(piece)) {
+            num++;
+        }
+    }
+    return num;
+}
+
+bool Board::isInsufficientMaterialPlayer(vector<std::shared_ptr<Piece>> vec)
+{
+    return !(count<Knight>(vec) >= 2 || count<Bishop>(vec) >= 2 ||
+             count<Rook>(vec) >= 1 || count<Queen>(vec) >= 1 ||
+             count<Pawn>(vec) >= 1);
+}

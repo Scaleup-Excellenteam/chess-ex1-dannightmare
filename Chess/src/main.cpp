@@ -24,6 +24,9 @@ int main()
     // Standard game
     string board =
         "RNBQKBNRPPPPPPPP################################pppppppprnbqkbnr";
+    // Insufficient material
+    // string board =
+    // "Kn#############################################################k";
     // string board =
     // "Q#####################B########R###########r######b#####q#######";
     // string board =
