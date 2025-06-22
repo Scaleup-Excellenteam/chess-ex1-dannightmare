@@ -220,6 +220,11 @@ int Board::move(Position src, Position dst)
     }
 
     auto piece = _board[src.y * SIZE + src.x];
+    if (_board[dst.y * SIZE + dst.x] == nullptr) {
+        num_turns_without_capture++;
+    } else {
+        num_turns_without_capture = 0;
+    }
 
     _board[dst.y * SIZE + dst.x] = piece;
     _board[src.y * SIZE + src.x] = nullptr;
@@ -231,6 +236,9 @@ int Board::move(Position src, Position dst)
     if (isCheck(_turn_color)) {
         // in check message or checkmate
         return playerCanMove ? 41 : 51;
+    }
+    if (num_turns_without_capture >= 50) {
+        return 43;
     }
     // legal move or stalemate
     return playerCanMove ? 42 : 52;

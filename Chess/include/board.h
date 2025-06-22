@@ -12,6 +12,8 @@ class Board
 {
 private:
     array<shared_ptr<Piece>, SIZE * SIZE> _board;
+    int num_turns_without_capture = 0;
+
     bool isPathClear(Position src, Position dst) const;
     bool isCheck(bool target_player) const;
     bool canPlayerMove(bool target_player) const;

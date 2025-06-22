@@ -14,6 +14,8 @@ void parseInput(const string &res, Position &pos1, Position &pos2);
 void parseMove(const Position &pos1, const Position &pos2, string &res);
 bool isTurnAI(const bool turn, const int AI);
 
+#define DEPTH 2
+
 int main()
 {
     // Two rooks
@@ -42,7 +44,7 @@ int main()
 
     a.preGetInput();
     try {
-        auto pq  = b.getBestMoves(2, b.get_turn_color());
+        auto pq  = b.getBestMoves(DEPTH, b.get_turn_color());
         Move mov = pq.poll();
         pos1 = mov.src, pos2 = mov.dst;
         parseMove(pos1, pos2, res);
@@ -81,7 +83,7 @@ int main()
 
         a.preGetInput();
         try {
-            auto pq  = b.getBestMoves(2, b.get_turn_color());
+            auto pq  = b.getBestMoves(DEPTH, b.get_turn_color());
             Move mov = pq.poll();
             pos1 = mov.src, pos2 = mov.dst;
             parseMove(pos1, pos2, res);

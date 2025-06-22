@@ -275,6 +275,10 @@ void Chess::doTurn()
 		m_msg = "the last movement was legal \n";
 		break;
 	}
+    case 43:
+        excute();
+        m_msg = "50 turns with no capture, can call it a draw\n";
+        break;
     // game ended
     case 51:
         excute();
@@ -341,7 +345,7 @@ void Chess::setCodeResponse(int codeResponse)
 {
 	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
 		((21 == codeResponse) || (codeResponse == 31)) ||
-		((41 == codeResponse) || (codeResponse == 42)) ||
+		((41 <= codeResponse) || (codeResponse <= 43)) ||
          (51 == codeResponse || 52 == codeResponse))
 		m_codeResponse = codeResponse;
 }
