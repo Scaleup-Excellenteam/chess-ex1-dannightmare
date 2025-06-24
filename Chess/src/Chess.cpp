@@ -292,6 +292,10 @@ void Chess::doTurn()
         excute();
         m_msg = "insufficient material\n";
         break;
+    case 54:
+        excute();
+        m_msg = "draw on repetition\n";
+        break;
 	}
 }
 
@@ -350,7 +354,7 @@ void Chess::setCodeResponse(int codeResponse)
 	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
 		((21 == codeResponse) || (codeResponse == 31)) ||
 		((41 <= codeResponse) || (codeResponse <= 43)) ||
-         (51 <= codeResponse || codeResponse <= 53))
+         (51 <= codeResponse || codeResponse <= 54))
 		m_codeResponse = codeResponse;
 }
 

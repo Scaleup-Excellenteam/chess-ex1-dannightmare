@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 Board::Board() {}
@@ -43,6 +44,8 @@ Board::Board(string init)
             break;
         }
     }
+    // basically add the board to the list
+    isBoardRepeatedTimes(_board);
 }
 
 Board::~Board() {}
@@ -232,6 +235,10 @@ int Board::move(Position src, Position dst)
         if (isInsufficientMaterial()) {
             return 53;
         }
+    }
+
+    if (isBoardRepeatedTimes(_board)) {
+        return 54;
     }
 
     _turn_color = !_turn_color;
@@ -442,4 +449,17 @@ bool Board::isInsufficientMaterialPlayer(vector<std::shared_ptr<Piece>> vec)
     return !(count<Knight>(vec) >= 2 || count<Bishop>(vec) >= 2 ||
              count<Rook>(vec) >= 1 || count<Queen>(vec) >= 1 ||
              count<Pawn>(vec) >= 1);
+}
+
+bool Board::isBoardRepeatedTimes(const JustBoard &rhs, int num)
+{
+    for (auto &board_count : board_counts) {
+        if (board_count.first == rhs) {
+            if (++board_count.second >= num) {
+                return true;
+            }
+        }
+    }
+    board_counts.push_back(make_pair(rhs, 1));
+    return false;
 }
