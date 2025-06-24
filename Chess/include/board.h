@@ -1,18 +1,29 @@
 #pragma once
 #include "Move.h"
 #include "PriorityQueue.h"
+#include "justboard.h"
 #include "piece.h"
 #include <array>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 using namespace std;
 class Board
 {
 private:
     array<shared_ptr<Piece>, SIZE * SIZE> _board;
+    int num_turns_without_capture = 0;
+
+    vector<pair<JustBoard, int>> board_counts;
+
+    bool isBoardRepeatedTimes(const JustBoard& other, int num = 3);
+
     bool isPathClear(Position src, Position dst) const;
     bool isCheck(bool target_player) const;
+    bool canPlayerMove(bool target_player) const;
+    vector<Move> getAllValidMovesByPlayer(bool this_player) const;
     bool isValidMove(Position src, Position dst) const;
 
     bool _turn_color = true;
@@ -27,7 +38,10 @@ private:
 
     // This function has no side effects. Useful for proper reuse of move
     // checking. if 0 then the piece can move; otherwise, it cannot move
-    int canMove(Position src, Position dst);
+    int canNotMove(Position src, Position dst) const;
+
+    bool isInsufficientMaterial() const;
+    static bool isInsufficientMaterialPlayer(vector<shared_ptr<Piece>> vec);
 
 public:
     Board();

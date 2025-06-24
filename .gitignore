@@ -37,6 +37,7 @@ Chess/build/
 Chess/Chess
 Chess/Makefile
 Chess/cmake_install.cmake
+**/cmake_install.cmake
 
 Chess/compile_commands.json
 Chess/include/Makefile

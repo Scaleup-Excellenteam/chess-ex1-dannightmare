@@ -31,6 +31,7 @@ class Chess {
 	bool isSame() const;
 	bool isValid() const;
 	bool isExit() const;
+	bool isEnded() const;
 	void excute();
 	void doTurn();
 
@@ -41,4 +42,6 @@ public:
     void preGetInput();
 	string getInput();
 	void setCodeResponse(int codeResponse);
+    bool getTurn() const;
+    void setInput(const string& input);
 };

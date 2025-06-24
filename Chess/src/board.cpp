@@ -5,10 +5,10 @@
 #include "threadpool.h"
 #include <cassert>
 #include <cctype>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 Board::Board() {}
@@ -44,6 +44,8 @@ Board::Board(string init)
             break;
         }
     }
+    // basically add the board to the list
+    isBoardRepeatedTimes(_board);
 }
 
 Board::~Board() {}
@@ -122,10 +124,63 @@ bool Board::isCheck(bool target_player) const
     return false;
 }
 
+vector<Move> Board::getAllValidMovesByPlayer(bool this_player) const
+{
+    vector<Move> allMoves;
+
+    for (int i = 0; i < SIZE * SIZE; i++) {
+        shared_ptr<Piece> piece = _board[i];
+        if (!piece) {
+            continue;
+        }
+        if (piece->Color() != this_player) {
+            continue;
+        }
+        Position src{i % SIZE, i / SIZE};
+        for (auto move : piece->getAllValidMoves(src)) {
+            allMoves.push_back(move);
+        }
+    }
+    return allMoves;
+}
+
+bool Board::canPlayerMove(bool this_player) const
+{
+    auto this_player_moves = getAllValidMovesByPlayer(this_player);
+    bool canPlayerMoveRet  = false;
+    for (auto move : this_player_moves) {
+        if (canNotMove(move.src, move.dst)) {
+            continue;
+        }
+
+        shared_ptr<Piece> piece     = _board[move.src.y * SIZE + move.src.x];
+        shared_ptr<Piece> dst_piece = _board[move.dst.y * SIZE + move.dst.x];
+        const_cast<Board *>(this)->_board[move.dst.y * SIZE + move.dst.x] =
+            piece;
+        const_cast<Board *>(this)->_board[move.src.y * SIZE + move.src.x] =
+            nullptr;
+
+        // check if current player will be checked
+        if (!isCheck(_turn_color)) {
+            canPlayerMoveRet = true;
+        }
+
+        // return to previous state
+        const_cast<Board *>(this)->_board[move.src.y * SIZE + move.src.x] =
+            piece;
+        const_cast<Board *>(this)->_board[move.dst.y * SIZE + move.dst.x] =
+            dst_piece;
+
+        if (canPlayerMoveRet)
+            break;
+    }
+    return canPlayerMoveRet;
+}
+
 // This function has no side effects. Useful for proper reuse of move checking
 // if 0 then the piece can move
 // otherwise, it cannot move
-int Board::canMove(Position src, Position dst)
+int Board::canNotMove(Position src, Position dst) const
 {
     auto piece = _board[src.y * SIZE + src.x];
     if (!piece) {
@@ -145,40 +200,60 @@ int Board::canMove(Position src, Position dst)
         return 21;
     }
 
-    _board[dst.y * SIZE + dst.x] = piece;
-    _board[src.y * SIZE + src.x] = nullptr;
+    const_cast<Board *>(this)->_board[dst.y * SIZE + dst.x] = piece;
+    const_cast<Board *>(this)->_board[src.y * SIZE + src.x] = nullptr;
 
+    int returned = 0;
     // check if current player will be checked
     if (isCheck(_turn_color)) {
-        // return to previous state
-        _board[src.y * SIZE + src.x] = piece;
-        _board[dst.y * SIZE + dst.x] = dst_piece;
-        return 31;
+        returned = 31;
     }
 
-    _board[src.y * SIZE + src.x] = piece;
-    _board[dst.y * SIZE + dst.x] = dst_piece;
-    return 0;
+    // return to previous state
+    const_cast<Board *>(this)->_board[src.y * SIZE + src.x] = piece;
+    const_cast<Board *>(this)->_board[dst.y * SIZE + dst.x] = dst_piece;
+    return returned;
 }
 
 int Board::move(Position src, Position dst)
 {
-    int canMoveRet = canMove(src, dst);
-    if (canMoveRet != 0) {
-        return canMoveRet;
+    int canNotMoveRet = canNotMove(src, dst);
+    if (canNotMoveRet != 0) {
+        return canNotMoveRet;
     }
 
-    auto piece = _board[src.y * SIZE + src.x];
+    bool isTurnCapture = _board[dst.y * SIZE + dst.x] != nullptr;
+    auto piece         = _board[src.y * SIZE + src.x];
 
     _board[dst.y * SIZE + dst.x] = piece;
     _board[src.y * SIZE + src.x] = nullptr;
 
+    if (!isTurnCapture) {
+        num_turns_without_capture++;
+    } else {
+        num_turns_without_capture = 0;
+        if (isInsufficientMaterial()) {
+            return 53;
+        }
+    }
+
+    if (isBoardRepeatedTimes(_board)) {
+        return 54;
+    }
+
     _turn_color = !_turn_color;
 
+    bool playerCanMove = canPlayerMove(_turn_color);
+
     if (isCheck(_turn_color)) {
-        return 41;
+        // in check message or checkmate
+        return playerCanMove ? 41 : 51;
     }
-    return 42;
+    if (num_turns_without_capture >= 50) {
+        return 43;
+    }
+    // legal move or stalemate
+    return playerCanMove ? 42 : 52;
 }
 
 PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
@@ -198,10 +273,10 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
         }
         vector<Move> valid_moves = piece_ptr->getAllValidMoves(curr);
         for (Move move : valid_moves) {
-            ThreadPool tp;
+            ThreadPool tp(8);
             auto mtx_ptr = std::make_shared<std::mutex>();
             tp.enqueue([this, mtx_ptr, &pq, &move, is_white, piece_ptr, depth] {
-                int canMoveResult = canMove(move.src, move.dst);
+                int canMoveResult = canNotMove(move.src, move.dst);
                 if (canMoveResult != 0) {
                     return;
                 }
@@ -218,7 +293,11 @@ PriorityQueue<Move, MoveComparator> Board::getBestMoves(int depth,
                     _board[move.dst.y * SIZE + move.dst.x] = dst_piece;
                     _board[move.src.y * SIZE + move.src.x] = piece_ptr;
                     _turn_color                            = !_turn_color;
-                    Move oponentBestMove = oponentBestMoves.poll();
+                    Move oponentBestMove;
+                    try {
+                        oponentBestMove = oponentBestMoves.poll();
+                    } catch (runtime_error) {
+                    }
                     move.score -= oponentBestMove.score;
                 }
                 std::unique_lock<std::mutex> lock(*mtx_ptr);
@@ -334,3 +413,53 @@ void Board::scoreMove(Move &move)
 }
 
 bool Board::get_turn_color() const { return _turn_color; }
+
+bool Board::isInsufficientMaterial() const
+{
+    vector<std::shared_ptr<Piece>> white;
+    vector<std::shared_ptr<Piece>> black;
+    for (auto piece : _board) {
+        if (!piece)
+            continue;
+        if (piece->Color()) {
+            white.push_back(piece);
+        } else {
+            black.push_back(piece);
+        }
+    }
+
+    return (isInsufficientMaterialPlayer(white) &&
+            isInsufficientMaterialPlayer(black));
+}
+
+template <class T>
+int count(vector<std::shared_ptr<Piece>> p)
+{
+    int num = 0;
+    for (auto piece : p) {
+        if (dynamic_pointer_cast<T>(piece)) {
+            num++;
+        }
+    }
+    return num;
+}
+
+bool Board::isInsufficientMaterialPlayer(vector<std::shared_ptr<Piece>> vec)
+{
+    return !(count<Knight>(vec) >= 2 || count<Bishop>(vec) >= 2 ||
+             count<Rook>(vec) >= 1 || count<Queen>(vec) >= 1 ||
+             count<Pawn>(vec) >= 1);
+}
+
+bool Board::isBoardRepeatedTimes(const JustBoard &rhs, int num)
+{
+    for (auto &board_count : board_counts) {
+        if (board_count.first == rhs) {
+            if (++board_count.second >= num) {
+                return true;
+            }
+        }
+    }
+    board_counts.push_back(make_pair(rhs, 1));
+    return false;
+}

@@ -210,6 +210,12 @@ bool Chess::isExit() const
 {
 	return ((m_input == "exit") || (m_input == "quit") || (m_input == "EXIT") || (m_input == "QUIT"));
 }
+
+bool Chess::isEnded() const
+{
+    return (m_codeResponse / 10 == 5);
+}
+
 // execute the movement on board
 void Chess::excute()
 {
@@ -269,6 +275,27 @@ void Chess::doTurn()
 		m_msg = "the last movement was legal \n";
 		break;
 	}
+    case 43:
+        excute();
+        m_msg = "50 turns with no capture, can call it a draw\n";
+        break;
+    // game ended
+    case 51:
+        excute();
+        m_msg = "checkmate, please exit now";
+        break;
+    case 52:
+        excute();
+        m_msg = "stalemate, please exit now";
+        break;
+    case 53:
+        excute();
+        m_msg = "insufficient material\n";
+        break;
+    case 54:
+        excute();
+        m_msg = "draw on repetition\n";
+        break;
 	}
 }
 
@@ -296,7 +323,7 @@ string Chess::getInput()
 	showAskInput();
 
 	cin >> m_input;
-	if (isExit())
+	if (isExit() || isEnded())
 		return "exit";
 	while (!isValid() || isSame())
 	{
@@ -326,6 +353,17 @@ void Chess::setCodeResponse(int codeResponse)
 {
 	if (((11 <= codeResponse) && (codeResponse <= 13)) ||
 		((21 == codeResponse) || (codeResponse == 31)) ||
-		((41 == codeResponse) || (codeResponse == 42)))
+		((41 <= codeResponse) || (codeResponse <= 43)) ||
+         (51 <= codeResponse || codeResponse <= 54))
 		m_codeResponse = codeResponse;
+}
+
+bool Chess::getTurn() const {
+    return m_turn;
+}
+
+void Chess::setInput(const string& input) {
+	if (isExit() || isEnded())
+		m_input = "exit";
+    m_input = input;
 }
