@@ -363,5 +363,7 @@ bool Chess::getTurn() const {
 }
 
 void Chess::setInput(const string& input) {
+	if (isExit() || isEnded())
+		m_input = "exit";
     m_input = input;
 }
